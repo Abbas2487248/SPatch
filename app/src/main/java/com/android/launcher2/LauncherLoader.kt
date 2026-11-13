@@ -16,8 +16,8 @@ object LauncherLoader {
     @JvmStatic
     fun instance() = this
 
-    fun waitForAndGetInitialService(serviceCallback: () -> Unit) {
-        SPatchCore.runWhenReady { serviceCallback() }
+    fun waitForAndGetInitialService(serviceCallback: Runnable) {
+        SPatchCore.runWhenReady { serviceCallback.run() }
     }
 
     fun obtainLaunchIntentByPackage(context: Context, packageName: String): Intent? {
