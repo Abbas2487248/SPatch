@@ -10,6 +10,7 @@ backed by public Android APIs.
 - `SPatchPackageManager`: resolves launch intents through Android
   `PackageManager`.
 - `SPatchActivityManager`: launcher activity-intent helper.
+- `VirtualSpaceActivity`: first-stage Arabic app catalogue where users can select installed apps and persist their selection locally.
 - Launcher shortcuts for ordinary installed apps use Android launch intents.
 - Uninstalling a downloaded app opens Android's standard package uninstall UI.
 - The manifest declares launcher-intent visibility for installed apps.
@@ -18,7 +19,7 @@ backed by public Android APIs.
 
 ## Important limitations
 
-This is **not** a replacement for the proprietary virtual-app engine.
+This is **not** a replacement for the proprietary virtual-app engine. The new virtual-space screen is only a saved app-selection catalogue; it does not clone, sandbox, install, or run a second instance of any app.
 Standalone mode does not provide app cloning, isolated virtual installations,
 virtual package storage, Xposed/module injection, or the original engine's
 splash/inner-app behavior. `SPatchCore.isVirtualizationAvailable()` returns
