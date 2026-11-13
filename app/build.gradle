@@ -22,9 +22,9 @@ android {
     }
     buildTypes {
         debug {
-            debuggable false
-            minifyEnabled true
-            shrinkResources true
+            debuggable true
+            minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         release {
@@ -45,9 +45,6 @@ android {
     lint {
         abortOnError false
         checkReleaseBuilds false
-    }
-    kotlinOptions {
-        jvmTarget = '21'
     }
     namespace 'com.android.launcher'
     buildFeatures {
