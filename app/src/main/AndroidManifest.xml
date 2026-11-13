@@ -91,6 +91,16 @@
         </activity>
 
         <activity
+            android:name="com.android.launcher2.sdk.VirtualSpaceActivity"
+            android:label="مساحة SPatch"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name="com.android.launcher2.WallpaperChooser"
             android:finishOnCloseSystemDialogs="true"
             android:icon="@mipmap/ic_launcher_wallpaper"
