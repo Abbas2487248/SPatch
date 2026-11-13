@@ -115,8 +115,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net_62v.external.MetaActivityManager;
-import net_62v.external.MetaPackageManager;
+import com.android.launcher2.sdk.SPatchActivityManager;
+import com.android.launcher2.sdk.SPatchCore;
 
 /**
  * Default launcher application.
@@ -434,11 +434,7 @@ public final class Launcher extends Activity
         // On large interfaces, we want the screen to auto-rotate based on the current orientation
         unlockScreenOrientation(true);
         LauncherLoader.instance().waitForAndGetInitialService(() -> {
-            try {
-                MetaPackageManager.acquireObtainAppSplash();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            SPatchCore.runWhenReady(() -> { });
             return null;
         });
     }
@@ -2026,10 +2022,9 @@ public final class Launcher extends Activity
             else
             {
                 try{
-                    Intent reserveIntent = MetaActivityManager.obtainSplashLaunchIntent(
-                            0,
-                            ((ShortcutInfo) tag).intent.getComponent().getPackageName(),
-                            this
+                    Intent reserveIntent = SPatchActivityManager.obtainLaunchIntent(
+                            this,
+                            ((ShortcutInfo) tag).intent.getComponent().getPackageName()
                     );
                     if(reserveIntent != null) startActivity(reserveIntent);
                 }catch (Exception e)
@@ -2130,13 +2125,6 @@ public final class Launcher extends Activity
     }
 
     void startApplicationUninstallActivity(ApplicationInfo appInfo) throws RemoteException {
-        if(MetaPackageManager.isInnerAppInstalled(appInfo.componentName.getPackageName()))
-        {
-            MetaPackageManager.uninstallAppFully(appInfo.componentName.getPackageName());
-            int messageId = R.string.cling_dismiss;
-            Toast.makeText(this, messageId, Toast.LENGTH_SHORT).show();
-            return;
-        }
         if ((appInfo.flags & ApplicationInfo.DOWNLOADED_FLAG) == 0) {
             // System applications cannot be installed. For now, show a toast explaining that.
             // We may give them the option of disabling apps this way.
