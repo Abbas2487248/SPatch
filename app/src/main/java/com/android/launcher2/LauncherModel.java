@@ -63,7 +63,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import net_62v.external.MetaPackageManager;
 
 
 /**
@@ -2119,11 +2118,6 @@ public class LauncherModel extends BroadcastReceiver {
                     }
                 }
             });
-            try {
-                MetaPackageManager.acquireObtainAppSplash();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
