@@ -116,7 +116,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.android.launcher2.sdk.SPatchActivityManager;
-import com.android.launcher2.sdk.SPatchCore;
 
 /**
  * Default launcher application.
@@ -433,10 +432,7 @@ public final class Launcher extends Activity
 
         // On large interfaces, we want the screen to auto-rotate based on the current orientation
         unlockScreenOrientation(true);
-        LauncherLoader.instance().waitForAndGetInitialService(() -> {
-            SPatchCore.runWhenReady(() -> { });
-            return null;
-        });
+        LauncherLoader.instance().waitForAndGetInitialService(() -> { });
     }
 
     protected void onUserLeaveHint() {
@@ -2026,9 +2022,14 @@ public final class Launcher extends Activity
                             this,
                             ((ShortcutInfo) tag).intent.getComponent().getPackageName()
                     );
-                    if(reserveIntent != null) startActivity(reserveIntent);
-                }catch (Exception e)
-                {
+                    if (reserveIntent != null) {
+                        startActivitySafely(v, reserveIntent, tag);
+                    } else {
+                        Toast.makeText(this, R.string.activity_not_found, Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Unable to launch installed application", e);
+                    Toast.makeText(this, R.string.activity_not_found, Toast.LENGTH_SHORT).show();
                 }
             }
 
