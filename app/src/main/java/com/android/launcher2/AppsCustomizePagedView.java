@@ -59,7 +59,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import net_62v.external.MetaActivityManager;
 
 /**
  * A simple callback interface which also provides the results of the task.
@@ -517,24 +516,9 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
             // to be consistent.  So re-enable the flag here, and we will re-disable it as necessary
             // when Launcher resumes and we are still in AllApps.
             mLauncher.updateWallpaperVisibility(true);
-            if(LauncherUtils.isSystemApplication(
-                    mLauncher,
-                    appInfo.componentName.getPackageName()
-            ))
-            {
-                mLauncher.startActivitySafely(v, appInfo.intent, appInfo);
-            }
-            else try{
-                Intent reserver = MetaActivityManager.obtainSplashLaunchIntent(
-                        0,
-                        appInfo.componentName.getPackageName(),
-                        mLauncher
-                );
-                if(reserver != null)
-                    mLauncher.startActivity(reserver);
-            }catch (Exception e)
-            {
-            }
+            // Standalone build: launch installed apps directly through Android.
+            // The original MetaActivityManager belongs to the unavailable virtualization SDK.
+            mLauncher.startActivitySafely(v, appInfo.intent, appInfo);
 
         } else if (v instanceof PagedViewWidget) {
             // Let the user know that they have to long press to add a widget
@@ -1598,132 +1582,3 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     private void removeAppsWithoutInvalidate(ArrayList<ApplicationInfo> list) {
         // loop through all the apps and remove apps that have the same component
         int length = list.size();
-        for (int i = 0; i < length; ++i) {
-            ApplicationInfo info = list.get(i);
-            int removeIndex = findAppByComponent(mApps, info);
-            if (removeIndex > -1) {
-                mApps.remove(removeIndex);
-            }
-        }
-    }
-    public void removeApps(ArrayList<ApplicationInfo> appInfos) {
-        removeAppsWithoutInvalidate(appInfos);
-        updatePageCountsAndInvalidateData();
-    }
-    public void updateApps(ArrayList<ApplicationInfo> list) {
-        // We remove and re-add the updated applications list because it's properties may have
-        // changed (ie. the title), and this will ensure that the items will be in their proper
-        // place in the list.
-        removeAppsWithoutInvalidate(list);
-        addAppsWithoutInvalidate(list);
-        updatePageCountsAndInvalidateData();
-    }
-
-    public void reset() {
-        // If we have reset, then we should not continue to restore the previous state
-        mSaveInstanceStateItemIndex = -1;
-
-        AppsCustomizeTabHost tabHost = getTabHost();
-        String tag = tabHost.getCurrentTabTag();
-        if (tag != null) {
-            if (!tag.equals(tabHost.getTabTagForContentType(ContentType.Applications))) {
-                tabHost.setCurrentTabFromContent(ContentType.Applications);
-            }
-        }
-
-        if (mCurrentPage != 0) {
-            invalidatePageData(0);
-        }
-    }
-
-    private AppsCustomizeTabHost getTabHost() {
-        return (AppsCustomizeTabHost) mLauncher.findViewById(R.id.apps_customize_pane);
-    }
-
-    public void dumpState() {
-        // TODO: Dump information related to current list of Applications, Widgets, etc.
-        ApplicationInfo.dumpApplicationInfoList(TAG, "mApps", mApps);
-        dumpAppWidgetProviderInfoList(TAG, "mWidgets", mWidgets);
-    }
-
-    private void dumpAppWidgetProviderInfoList(String tag, String label,
-            ArrayList<Object> list) {
-        Log.d(tag, label + " size=" + list.size());
-        for (Object i: list) {
-            if (i instanceof AppWidgetProviderInfo) {
-                AppWidgetProviderInfo info = (AppWidgetProviderInfo) i;
-                Log.d(tag, "   label=\"" + info.label + "\" previewImage=" + info.previewImage
-                        + " resizeMode=" + info.resizeMode + " configure=" + info.configure
-                        + " initialLayout=" + info.initialLayout
-                        + " minWidth=" + info.minWidth + " minHeight=" + info.minHeight);
-            } else if (i instanceof ResolveInfo) {
-                ResolveInfo info = (ResolveInfo) i;
-                Log.d(tag, "   label=\"" + info.loadLabel(mPackageManager) + "\" icon="
-                        + info.icon);
-            }
-        }
-    }
-
-    public void surrender() {
-        // TODO: If we are in the middle of any process (ie. for holographic outlines, etc) we
-        // should stop this now.
-
-        // Stop all background tasks
-        cancelAllTasks();
-    }
-
-    @Override
-    public void iconPressed(PagedViewIcon icon) {
-        // Reset the previously pressed icon and store a reference to the pressed icon so that
-        // we can reset it on return to Launcher (in Launcher.onResume())
-        if (mPressedIcon != null) {
-            mPressedIcon.resetDrawableState();
-        }
-        mPressedIcon = icon;
-    }
-
-    public void resetDrawableState() {
-        if (mPressedIcon != null) {
-            mPressedIcon.resetDrawableState();
-            mPressedIcon = null;
-        }
-    }
-
-    /*
-     * We load an extra page on each side to prevent flashes from scrolling and loading of the
-     * widget previews in the background with the AsyncTasks.
-     */
-    final static int sLookBehindPageCount = 2;
-    final static int sLookAheadPageCount = 2;
-    protected int getAssociatedLowerPageBound(int page) {
-        final int count = getChildCount();
-        int windowSize = Math.min(count, sLookBehindPageCount + sLookAheadPageCount + 1);
-        int windowMinIndex = Math.max(Math.min(page - sLookBehindPageCount, count - windowSize), 0);
-        return windowMinIndex;
-    }
-    protected int getAssociatedUpperPageBound(int page) {
-        final int count = getChildCount();
-        int windowSize = Math.min(count, sLookBehindPageCount + sLookAheadPageCount + 1);
-        int windowMaxIndex = Math.min(Math.max(page + sLookAheadPageCount, windowSize - 1),
-                count - 1);
-        return windowMaxIndex;
-    }
-
-    @Override
-    protected String getCurrentPageDescription() {
-        int page = (mNextPage != INVALID_PAGE) ? mNextPage : mCurrentPage;
-        int stringId = R.string.default_scroll_format;
-        int count = 0;
-        
-        if (page < mNumAppsPages) {
-            stringId = R.string.apps_customize_apps_scroll_format;
-            count = mNumAppsPages;
-        } else {
-            page -= mNumAppsPages;
-            stringId = R.string.apps_customize_widgets_scroll_format;
-            count = mNumWidgetPages;
-        }
-
-        return String.format(getContext().getString(stringId), page + 1, count);
-    }
-}
